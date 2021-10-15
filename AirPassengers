@@ -39,7 +39,7 @@ plot(aggregate(AP))
 #Box plot across months give a sense of seasonal effect
 boxplot(AP~cycle(AP))
 #Conclusion from boxplot:
-#NO of passengers in the month of july and august are more(seasonality)
+#Number of passengers in the month of july and august are more(seasonality)
 
 
 #Check the trend of AP time series dataset
