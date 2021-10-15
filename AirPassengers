@@ -1,0 +1,98 @@
+#ARIMA MODEL
+
+#Clear the environment list
+rm(list=ls())  
+
+#Load the time series datasets Airpassengers
+data("AirPassengers")
+AP=AirPassengers
+AP
+
+#Check the datatype of AP dataset
+class(AP)
+
+#Explore the dataset AP
+start(AP) #Start of the time series(1949)
+end(AP)   #End of the time series(1960)
+frequency(AP) #Interval of this time series is 12months in a year
+summary(AP)   #No of passengers are distributed across the spectrum
+time(AP)
+
+#Fitting the regression line of no of passengers and time
+#As time is the dependent variable in Time series analysis
+reg=lm(AP~time(AP))
+summary(reg)
+reg
+
+#Plotting the time series dataset AirPassengers
+plot(AP)
+#Fit the Regression line (Gives mean of time series analysis)
+abline(reg,col='red')
+
+
+#Analysis of Timeseries data
+cycle(AP)#Print cycle across years
+aggregate(AP)
+plot(aggregate(AP))
+
+#Check the Seasonality part
+#Box plot across months give a sense of seasonal effect
+boxplot(AP~cycle(AP))
+#Conclusion from boxplot:
+#NO of passengers in the month of july and august are more(seasonality)
+
+
+#Check the trend of AP time series dataset
+plot(aggregate(AP))
+
+plot(AP)
+#Conclusion:
+#The time series not stationary(mean is increasing,variance is not equal)
+#Before test the stationary data we have to make the data to stationary
+#First:Remove the unequal variances by taking log function
+#Second:(Trend component)to make the mean constant,differentiate the series 
+plot(log(AP))      #Make the variance equal
+plot(diff(log(AP)))#Make the mean as constant
+
+#Now the series is stationary so we can use any kind of time series modelling
+#ARIMA Model or Augmented Dickey-Fuller Test
+
+#ARIMA MODEL
+#AR I  MA
+#p  d  q
+#We are going to get p,d,q values from the  autocorelation graph
+#Autocorelation 
+acf(AP)
+#Clearly the values are exceeding the blue line in the figure
+#So our aim is to reduce that lines below the blue line
+acf(diff(log(AP))) #Determination of q (q=1,1st line is the just before line 
+                   #of inverted line)
+#partial autocorrelation
+pacf(diff(log(AP))) #Determination of p (p=0,0th line is the just before line 
+                    #of inverted line)
+
+#Finally we get (p,d,q)=(0,1,1) for our ARIMA Model
+#Let's fit the ARIMA model and predict the future 10 years
+fit=arima(log(AP),c(0,1,1),seasonal=list(order=c(0,1,1),period=12) )
+
+#Predict the values for next 10 years
+pred1=predict(fit, n.ahead=10*12)
+#Predict the values for next 15 years
+pred2=predict(fit,n.ahead=15*12)
+#Convert the above log values into decimal values
+pred3=2.718^pred1$pred
+pred4=2.718^pred2$pred
+pred3
+pred4
+
+#Plotting the data from 1949 to 1975
+ts.plot(AP, 2.718^pred1$pred , log='y', lty=c(1,3))
+
+#Testing our model
+datawide=ts(AirPassengers,frequency=12,start=c(1949,1),end=c(1959,12))
+fit1 =arima(log(datawide),c(0,1,1),seasonal = list(order=c(0,1,1),period=12))
+pred=predict(fit1 , n.ahead=10*12)
+pred1=2.718^pred$pred
+data1=head(pred1,12) #predicted Data of 1960
+predicted_1960=round(data1 ,digits=0) #Rounding the 1960 data
+original_1960 =tail(AP,12)
